@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Curtir com LocalStorage</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        input, button { margin-right: 10px; padding: 5px; }
+    </style>
+</head>
+<body>
+
+    <h2>Campo de Curtidas</h2>
+    <input type="text" id="nomeInput" placeholder="Digite seu nome">
+    <button id="curtirBtn">Curtir</button>
+    <button id="limparBtn">Limpar</button>
+
+    <p id="listaCurtidas">Ninguém curtiu</p>
+
+    <script>
+        // Recupera nomes do localStorage ou inicia array vazio
+        const nomes = JSON.parse(localStorage.getItem('nomes')) || [];
+
+        const input = document.getElementById('nomeInput');
+        const curtirBtn = document.getElementById('curtirBtn');
+        const limparBtn = document.getElementById('limparBtn');
+        const lista = document.getElementById('listaCurtidas');
+
+        // Atualiza a lista ao carregar a página
+        atualizarLista();
+
+        curtirBtn.addEventListener('click', () => {
+            const nome = input.value.trim();
+            if (nome && !nomes.includes(nome)) {
+                nomes.push(nome);
+                // Salva no localStorage
+                localStorage.setItem('nomes', JSON.stringify(nomes));
+            }
+            input.value = '';
+            atualizarLista();
+        });
+
+        limparBtn.addEventListener('click', () => {
+            nomes.length = 0; // esvazia o array
+            localStorage.removeItem('nomes'); // remove do localStorage
+            atualizarLista();
+        });
+
+        function atualizarLista() {
+            const total = nomes.length;
+            if (total === 0) {
+                lista.textContent = "Ninguém curtiu";
+            } else if (total === 1) {
+                lista.textContent = `${nomes[0]} curtiu`;
+            } else if (total === 2) {
+                lista.textContent = `${nomes[0]} e ${nomes[1]} curtiram`;
+            } else {
+                lista.textContent = `${nomes[0]}, ${nomes[1]} e mais ${total - 2} pessoas curtiram`;
+            }
+        }
+    </script>
+
+</body>
+</html>
