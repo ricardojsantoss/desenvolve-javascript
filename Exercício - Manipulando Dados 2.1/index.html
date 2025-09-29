@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Busca de Usuários do GitHub</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    input, button { padding: 6px; margin-right: 10px; }
+    ul { list-style: none; padding: 0; }
+    li { margin-bottom: 10px; }
+    .usuario {
+      border: 1px solid #ddd;
+      padding: 10px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .usuario img {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Buscar Usuários do GitHub</h2>
+
+  <input type="text" id="buscaInput" placeholder="Digite um nome de usuário">
+  <button id="buscarBtn">Buscar</button>
+
+  <p id="mensagem"></p>
+  <ul id="listaUsuarios"></ul>
+
+  <script>
+    const input = document.getElementById('buscaInput');
+    const btn = document.getElementById('buscarBtn');
+    const lista = document.getElementById('listaUsuarios');
+    const mensagem = document.getElementById('mensagem');
+
+    btn.addEventListener('click', async () => {
+      const termo = input.value.trim();
+      lista.innerHTML = '';
+      mensagem.textContent = '';
+
+      if (!termo) {
+        mensagem.textContent = 'Digite algo para pesquisar.';
+        return;
+      }
+
+      try {
+        const resp = await fetch(`https://api.github.com/search/users?q=${encodeURIComponent(termo)}`);
+        if (!resp.ok) {
+          throw new Error('Erro na requisição');
+        }
+        const data = await resp.json();
+
+        if (data.items.length === 0) {
+          mensagem.textContent = 'Não foram encontrados usuários para esta pesquisa';
+          return;
+        }
+
+        data.items.forEach(user => {
+          const li = document.createElement('li');
+          li.innerHTML = `
+            <div class="usuario">
+              <img src="${user.avatar_url}" alt="${user.login}">
+              <div>
+                <strong>${user.login}</strong><br>
+                <a href="${user.html_url}" target="_blank">Ver perfil</a>
+              </div>
+            </div>
+          `;
+          lista.appendChild(li);
+        });
+
+      } catch (error) {
+        mensagem.textContent = 'Ocorreu um erro ao buscar os usuários.';
+        console.error(error);
+      }
+    });
+  </script>
+
+</body>
+</html>
