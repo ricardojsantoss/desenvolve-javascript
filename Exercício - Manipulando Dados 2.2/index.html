@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini Twitter de Gatinhos</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: #f2f2f2;
+  }
+
+  header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: #1da1f2;
+    padding: 10px;
+    z-index: 999;
+  }
+
+  header form {
+    display: flex;
+    gap: 10px;
+  }
+
+  header textarea {
+    flex: 1;
+    resize: none;
+    padding: 10px;
+    border-radius: 6px;
+    border: none;
+  }
+
+  header button {
+    background: #fff;
+    color: #1da1f2;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+
+  main {
+    margin-top: 100px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 10px;
+  }
+
+  .post {
+    background: #fff;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 0 4px rgba(0,0,0,0.1);
+  }
+
+  .post-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .username {
+    font-weight: bold;
+  }
+
+  .cat-img {
+    width: 100%;
+    max-height: 300px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin: 10px 0;
+  }
+
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .like-btn {
+    background: transparent;
+    border: none;
+    color: #e0245e;
+    cursor: pointer;
+    font-size: 16px;
+  }
+</style>
+</head>
+<body>
+<header>
+  <form id="postForm">
+    <textarea id="postText" rows="2" placeholder="O que está acontecendo?"></textarea>
+    <button type="submit">Postar</button>
+  </form>
+</header>
+
+<main id="feed"></main>
+
+<script>
+  const feed = [];
+  const feedContainer = document.getElementById('feed');
+  const postForm = document.getElementById('postForm');
+  const postText = document.getElementById('postText');
+
+  const username = 'ricardo_santos';
+  const avatarUrl = 'https://i.pravatar.cc/100?u=ricardo';
+
+  postForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const text = postText.value.trim();
+    if (!text) return;
+
+    // Pega imagem aleatória de gatinho
+    const catResponse = await fetch('https://api.thecatapi.com/v1/images/search');
+    const catData = await catResponse.json();
+    const catImage = catData[0].url;
+
+    // Cria objeto do post
+    const newPost = {
+      id: Date.now(),
+      date: new Date(),
+      username,
+      avatar: avatarUrl,
+      text,
+      catImage,
+      likes: 0
+    };
+
+    // Adiciona no início do array (mais novo primeiro)
+    feed.unshift(newPost);
+    renderFeed();
+
+    postText.value = '';
+  });
+
+  function renderFeed() {
+    feedContainer.innerHTML = '';
+    feed.forEach(post => {
+      const postEl = document.createElement('div');
+      postEl.className = 'post';
+      postEl.innerHTML = `
+        <div class="post-header">
+          <img src="${post.avatar}" alt="avatar" class="avatar">
+          <div class="username">@${post.username}</div>
+        </div>
+        <p>${post.text}</p>
+        <img src="${post.catImage}" alt="gatinho" class="cat-img">
+        <div class="actions">
+          <button class="like-btn" data-id="${post.id}">❤️ Curtir</button>
+          <span>${post.likes} likes</span>
+        </div>
+      `;
+      feedContainer.appendChild(postEl);
+    });
+
+    // Reatribui eventos de curtir
+    document.querySelectorAll('.like-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = Number(btn.dataset.id);
+        const post = feed.find(p => p.id === id);
+        post.likes++;
+        renderFeed();
+      });
+    });
+  }
+</script>
+</body>
+</html>
